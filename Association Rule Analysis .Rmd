@@ -46,3 +46,126 @@ str(noon)
 
 skim(noon)
 ```
+
+# Data Cleaning
+```{r}
+library(stringr)
+noon$base_note <- str_replace(noon$base_note, " And", ",")
+noon$base_note <- str_replace(noon$base_note, " and", ",")
+noon$base_note <- str_replace(noon$base_note, " &", ",")
+
+noon$middle_note <- str_replace(noon$middle_note, " And", ",")
+noon$middle_note <- str_replace(noon$middle_note, " and", ",")
+noon$middle_note <- str_replace(noon$middle_note, " &", ",")
+```
+
+#Explore
+
+```{r}
+library(forcats)
+
+noon %>% 
+  count(scents) %>% 
+  mutate(name = fct_reorder(scents, n)) %>%
+  ggplot( aes(x=name, y=n)) +
+    geom_bar(stat="identity", fill="#f68060", alpha=.6, width=.4) +
+    coord_flip() +
+    ylab("Number of perfumes") +
+    xlab("Scents")
+    theme_bw()
+```
+```{r}
+df_price<-noon %>% 
+  select(new_price,scents)
+  
+ggplot(df_price, aes(x=scents, y=new_price)) +
+  geom_segment( aes(x=scents, xend=scents, y=0, yend=new_price), color="skyblue") +
+  geom_point( color="purple", size=4, alpha=0.6) +
+  theme_light() +
+  coord_flip() +
+  theme(
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+```
+```{r}
+noon$price_deduction <- noon$old_price - noon$new_price
+noon$percent_deduction <- round((noon$price_deduction/noon$old_price),4) * 100
+noon$price_per_ml <- round((noon$new_price/noon$ml), 2)
+noon <- noon %>% 
+  mutate(discount = case_when(price_deduction > 0 ~ "Yes", 
+                              TRUE ~ "NO"))
+noon
+```
+```{r}
+ggplot(noon, aes(x=price_per_ml, y=item_rating, col=department)) + 
+    geom_point() +
+  facet_wrap(~department)
+
+```
+
+```{r}
+price_reduction<-noon %>% 
+  select(new_price,old_price,department) %>% 
+  group_by(old_price, new_price)
+
+ggplot(price_reduction, aes(col=department, x=new_price, y=old_price)) + 
+    geom_point() +
+  xlim(0, 500)+ylim(0, 500)+
+  labs(x = "new price", y = "old price", title = "price reduction in deparment") 
+```
+
+
+```{r}
+men_df <- noon[which(noon$department =='Men'),]
+men_df %>%
+  select(base_note) %>% 
+ unnest_tokens(output = word, 
+               input = base_note) %>% 
+   anti_join(stop_words) %>% 
+ count(word, sort = TRUE) %>% 
+  head(10) %>% 
+   mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word)) +
+  geom_col(aes(col=word), show.legend = FALSE) +
+  labs(y = NULL)+
+  theme_classic()+
+   labs(x = "Frequency", y = " ", title = "Top 10 Men's Scent Notes") 
+```
+```{r}
+women_df <- noon[which(noon$department =='Women'),]
+women_df %>%
+  select(base_note) %>% 
+ unnest_tokens(output = word, 
+               input = base_note) %>% 
+   anti_join(stop_words) %>% 
+ count(word, sort = TRUE) %>% 
+  head(10) %>% 
+   mutate(word = reorder(word, n)) %>%
+  ggplot(aes(n, word)) +
+  geom_col(aes(col=word), show.legend = FALSE) +
+  labs(y = NULL)+
+  theme_classic()+
+   labs(x = "Frequency", y = " ", title = "Top 10 Women's Scent Notes") 
+```
+
+```{r}
+
+ggplot(noon, aes(x=price_deduction, fill=department)) +
+    geom_histogram( color="#e9ecef", alpha=2.5, position = 'identity', bins = 15) +
+    scale_fill_manual(values=c("#F75B70", "#7FC8F7","#EEF75B", "#F19FD7")) +
+    theme_ipsum() +
+  facet_wrap(~department)
+
+```
+
+```{r}
+noon %>%
+  count(department, discount) %>% 
+  group_by(discount) %>% 
+  mutate(proportion = n/ sum(n)) %>% 
+  ggplot(aes(department, proportion, fill = discount)) +
+  geom_col()+
+  scale_fill_brewer(palette="PrGN")
+```
