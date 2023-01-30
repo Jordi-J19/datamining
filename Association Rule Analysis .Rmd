@@ -1,0 +1,48 @@
+---
+title: "EDA + Association Rule Analysis of Noon Perfume"
+output: html_notebook
+---
+Modified by Yordanos Jewani
+Data: Jan 30, 2023
+
+**Data**
+
+Noon is a large online marketplace in the Middle East, and this dataset shows the scent notes of perfume in different brands. 
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_graphics("ezgif.com-gif-maker.png", error = FALSE)
+```
+
+# Import Data
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(tidytext)
+library(ggplot2)
+library(skimr)
+#install.packages("arules")
+#install.packages("arulesViz")
+library(arules)
+library(arulesViz)
+library(hrbrthemes)
+library(viridis)
+```
+
+
+```{r}
+noon <- read.csv(file = "noon_perfumes_dataset.csv", stringsAsFactors = FALSE)
+
+noon
+```
+```{r}
+dim(noon)
+```
+
+
+```{r}
+str(noon)
+```
+```{r}
+
+skim(noon)
+```
