@@ -169,3 +169,32 @@ noon %>%
   geom_col()+
   scale_fill_brewer(palette="PrGN")
 ```
+# Data pre-processing
+
+```{r}
+bn<-noon %>% 
+  select(base_note)
+write.csv(bn,"'\\Users\\yordi\\Documents\\Fall 2022\\Data Mining\\Project\\bnn.csv", row.names = FALSE)
+```
+
+Manual data pre-processing perform to transform list colunm to binary matrix to make suitable for changing it to transaction.
+
+```{r}
+note <- read.csv('/Users/yordi/Documents/Fall 2022/Data Mining/Project/bnote.csv')
+note<- as.matrix(note)
+note= as(note, "transactions")
+itemFrequencyPlot(note, topN=10)
+```
+
+```{r}
+rules<- apriori(note, parameter = list(supp=0.05, conf=0.5, minlen=3))
+rules <- sort(rules, by="lift")
+head(inspect(rules), 10)
+top10_rules<- rules %>% 
+            head(10)
+```
+```{r}
+plot(top10_rules, method = "graph", control=list(type="items"),
+     engine = "htmlwidget")
+
+```
