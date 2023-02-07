@@ -1,5 +1,5 @@
 ---
-title: "EDA + Association Rule Analysis of Noon Perfume"
+title: "EDA + Association Rule Analysis for Noon Perfume Dataset"
 output: html_notebook
 ---
 Modified by Yordanos Jewani
@@ -195,6 +195,60 @@ top10_rules<- rules %>%
 ```
 ```{r}
 plot(top10_rules, method = "graph", control=list(type="items"),
+     engine = "htmlwidget")
+
+```
+
+```{r}
+noon_df<- noon %>% 
+  select(-c(price_deduction, price_per_ml, percent_deduction))
+
+noon_factor<- map_df(noon_df, as.factor)
+noon_tr<- as(noon_factor, "transactions")
+```
+
+```{r}
+itemFrequencyPlot(noon_tr, topN=10)
+```
+```{r}
+noon_rules<- apriori(noon_tr, 
+                     parameter = list(supp=0.02,conf= 0.5, minlen=3),
+                     appearance = list(rhs= "scents=Floral"))
+```
+```{r}
+noon_rules %>% 
+  sort(., by="lift") %>% 
+  head(5) %>% 
+  inspect()
+```
+
+
+```{r}
+top10_noon<- noon_rules %>% 
+  sort(., by="lift") %>% 
+  head(10) 
+plot(top10_noon, method = "graph", control=list(type="items"),
+     engine = "htmlwidget")
+
+```
+
+```{r}
+noon_rules1<- apriori(noon_tr, 
+                     parameter = list(supp=0.08,conf= 0.5, minlen=3),
+                     appearance = list(rhs= "discount=Yes"))
+```
+```{r}
+noon_rules1 %>% 
+  sort(., by="lift") %>% 
+  head(10) %>% 
+  inspect()
+```
+
+```{r}
+top10_noon1<- noon_rules1 %>% 
+  sort(., by="lift") %>% 
+  head(10) 
+plot(top10_noon1, method = "graph", control=list(type="items"),
      engine = "htmlwidget")
 
 ```
